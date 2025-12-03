@@ -8,8 +8,9 @@ use std::{
 
 fn main() {
     while true {
-        let commands = vec!["echo", "type", "pwd", "ls", "cd", "exit"];
-        print!("$ ");
+        let commands = vec!["echo", "type", "pwd", "cd", "ls", "exit"];
+        let current_path = env::current_dir().unwrap();
+        print!("{} $ ", short_path(&current_path));
         io::stdout().flush().unwrap();
 
         let mut command = String::new();
@@ -85,5 +86,16 @@ fn main() {
             "exit" => break,
             _ => println!("{}: command not found", command.trim()),
         }
+    }
+}
+
+fn short_path(path: &std::path::Path) -> String {
+    let home = env::home_dir().unwrap();
+    let path_str = path.to_string_lossy();
+
+    if path_str.starts_with(home.to_string_lossy().as_ref()) {
+        path_str.replacen(home.to_string_lossy().as_ref(), "~", 1)
+    } else {
+        path_str.to_string()
     }
 }
