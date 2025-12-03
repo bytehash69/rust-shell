@@ -1,3 +1,4 @@
+#![allow(warnings)]
 #[allow(unused_imports)]
 use std::io::{self, Write};
 use std::{
@@ -10,7 +11,18 @@ fn main() {
     while true {
         let commands = vec!["echo", "type", "pwd", "cd", "ls", "exit"];
         let current_path = env::current_dir().unwrap();
-        print!("{} $ ", short_path(&current_path));
+        let username = std::env::var("USER").unwrap_or("unknown".into());
+        let hostname = std::fs::read_to_string("/etc/hostname")
+            .unwrap()
+            .trim()
+            .to_string();
+
+        print!(
+            "\x1b[32m{}\x1b[0m@{} \x1b[32m{}\x1b[0m> ",
+            username,
+            hostname,
+            short_path(&current_path)
+        );
         io::stdout().flush().unwrap();
 
         let mut command = String::new();
@@ -82,7 +94,7 @@ fn main() {
                     }
                 }
                 println!();
-            },
+            }
             "exit" => break,
             _ => println!("{}: command not found", command.trim()),
         }
