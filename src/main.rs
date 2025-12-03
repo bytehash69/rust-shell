@@ -1,10 +1,14 @@
 #[allow(unused_imports)]
 use std::io::{self, Write};
-use std::{env, fs, os::unix::fs::PermissionsExt};
+use std::{
+    env::{self},
+    fs,
+    os::unix::fs::PermissionsExt,
+};
 
 fn main() {
     while true {
-        let commands = vec!["echo", "type", "exit"];
+        let commands = vec!["echo", "type", "pwd", "ls", "cd", "exit"];
         print!("$ ");
         io::stdout().flush().unwrap();
 
@@ -44,6 +48,39 @@ fn main() {
                         }
                     }
                 }
+            }
+            "pwd" => println!("{}", env::current_dir().unwrap().display()),
+            "cd" => {
+                if parts.len() == 1 {
+                    env::set_current_dir(env::home_dir().unwrap()).expect("Path not found");
+                } else {
+                    env::set_current_dir(parts[1]).expect("Path not found");
+                }
+            }
+            "ls" => {
+                let mut entries: Vec<_> = fs::read_dir(".").unwrap().map(|e| e.unwrap()).collect();
+
+                entries.sort_by_key(|e| e.file_name().to_string_lossy().to_lowercase());
+
+                for entry in entries {
+                    let name = entry.file_name().to_string_lossy().to_string();
+                    let entry_metadata = entry.metadata().unwrap();
+                    let is_dir = entry_metadata.is_dir();
+                    let is_exec = entry_metadata.permissions().mode();
+
+                    if name.starts_with('.') {
+                        continue;
+                    }
+
+                    if is_dir {
+                        print!("\x1b[32m{}\x1b[0m/  ", name);
+                    } else if is_exec & 0o111 != 0 {
+                        print!("\x1b[34m{}\x1b[0m*  ", name)
+                    } else {
+                        print!("{}  ", name);
+                    }
+                }
+                println!();
             },
             "exit" => break,
             _ => println!("{}: command not found", command.trim()),
