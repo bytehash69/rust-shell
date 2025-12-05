@@ -28,7 +28,13 @@ fn main() {
 
         let mut command = String::new();
         io::stdin().read_line(&mut command).unwrap();
+        if command.contains("\x1b") {
+            continue;
+        }
         let parts = command.split_whitespace().collect::<Vec<&str>>();
+        if parts.is_empty() {
+            continue;
+        }
 
         match parts[0] {
             "echo" => println!("{}", parts[1..].join(" ")),
