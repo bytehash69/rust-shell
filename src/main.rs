@@ -5,6 +5,7 @@ use std::{
     env::{self},
     fs,
     os::unix::fs::PermissionsExt,
+    process::Command,
 };
 
 fn main() {
@@ -96,7 +97,19 @@ fn main() {
                 println!();
             }
             "exit" => break,
-            _ => println!("{}: command not found", command.trim()),
+            _ => {
+                let result = Command::new(parts[0]).args(&parts[1..]).spawn();
+
+                match result {
+                    Ok(mut child) => match child.wait() {
+                        Ok(_) => {}
+                        Err(e) => eprintln!("Error waiting for command: {}", e),
+                    },
+                    Err(_) => {
+                        println!("{}: command not found", parts[0]);
+                    }
+                }
+            }
         }
     }
 }
