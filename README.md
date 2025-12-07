@@ -22,11 +22,5 @@ cargo build --release
 Just run:
 
 ```bash
-./target/release/rust-shell
+cargo run
 ```
-
-## 🤝 Contributing
-
-PRs and issues are welcome! Please open one if you have ideas or spot bugs.
-
----
